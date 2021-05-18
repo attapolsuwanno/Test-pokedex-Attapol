@@ -1,9 +1,19 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import "./App.css";
-import { Button as AntButton, List, Card, Modal, Input } from "antd";
-
+import {
+  Button as AntButton,
+  List,
+  Card,
+  Modal,
+  Input,
+  Image,
+  Col,
+  Row,
+  Rate,
+  Progress,
+} from "antd";
 import styled from "styled-components";
-import styledComponents from "styled-components";
 // import { Footer } from "./component/footer";
 const { Search } = Input;
 
@@ -115,6 +125,35 @@ const Mycard = [
 
 const App = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [dataListCard, setDataListCard] = useState([]);
+  const [search, setSearch] = useState("");
+  const [filteredData, setFilteredData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [show, setShow] = useState(false);
+  const [dataStruc, setDataStruc] = useState([]);
+
+  useEffect(() => {
+    setLoading(true);
+    axios
+      .get("http://localhost:3030/api/cards")
+      .then((res) => {
+        console.log("Hi my", res.data.cards);
+        setDataListCard(res.data.cards);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, []);
+
+  useEffect(() => {
+    setFilteredData(
+      dataListCard.filter((card) =>
+        card.name.toLowerCase().includes(search.toLowerCase())
+      )
+    );
+    Call();
+  }, [search, dataListCard]);
 
   const showModal = () => {
     setIsModalVisible(true);
@@ -128,60 +167,203 @@ const App = () => {
     setIsModalVisible(false);
   };
 
-  const onSearch = (value) => console.log(value);
+  const onSearch = (value) => setSearch(value);
+  const mouseHover = () => setShow((prev) => !prev);
+
+  const Call = () => {
+    const filterMap = dataListCard.map((item) => ({
+      id: item.id,
+      name: item.name,
+      imageUrl: item.imageUrl,
+      hp: item.hp < 100 ? 100 : 0,
+      strength:
+        item?.attacks?.length === 2
+          ? 2 * 50
+          : item?.attacks?.length === 1
+          ? 1 * 50
+          : 0,
+      weakness: item?.weaknesses?.length === 1 ? 100 : 0,
+      damage: calDamage(item.attacks),
+      happiness: 5,
+    }));
+    setDataStruc(filterMap);
+    console.log("New Data", filterMap);
+  };
+
+  const calDamage = (item) => {
+    console.log("calDamage", item);
+    var totalDamage = 0;
+    for (var i = 0; i < item?.length; i++) {
+      totalDamage = totalDamage + (item[i]?.damage).match(/(\d+)/);
+    }
+    return 60;
+  };
 
   return (
     <div className="App">
-      <div>
+      <div style={{ height: "660px", overflow: "auto" }}>
         <List
           grid={{
-            gutter: 16,
-            xs: 1,
-            sm: 2,
-            md: 4,
-            lg: 4,
-            xl: 6,
-            xxl: 3,
+            gutter: 4,
+            column: 2,
           }}
-          dataSource={Mycard}
+          dataSource={dataStruc}
           renderItem={(item) => (
             <List.Item>
-              <Card>
-                <div>{item.name}</div>
+              <Card
+                hoverable
+                // extra={
+                //   show ? (
+                //     <ButtonDelete type="text" onClick={showModal}>
+                //       X
+                //     </ButtonDelete>
+                //   ) : null
+                // }
+                // onMouseEnter={mouseHover}
+                // onMouseLeave={mouseHover}
+              >
+                <div>
+                  <Row>
+                    <Col flex={2}>
+                      <Image preview={false} width={100} src={item.imageUrl} />
+                    </Col>
+                    <Col flex={3}>
+                      <h1>{item.name}</h1>
+                      <div>
+                        <Row>
+                          <Col flex={2}>HP</Col>
+                          <Col flex={3}>
+                            <Progress percent={item.hp} />
+                          </Col>
+                        </Row>
+                        <Row>
+                          <Col flex={2}>STR</Col>
+                          <Col flex={3}>
+                            <Progress percent={item.strength} />
+                          </Col>
+                        </Row>
+                        <Row>
+                          <Col flex={2}>WEAK</Col>
+                          <Col flex={3}>
+                            <Progress percent={item.weakness} />
+                          </Col>
+                        </Row>
+                      </div>
+                      <div>
+                        <Rate disabled defaultValue={item.happiness} />
+                      </div>
+                    </Col>
+                  </Row>
+                </div>
               </Card>
             </List.Item>
           )}
         />
       </div>
-      <Modal visible={isModalVisible} onOk={handleOk} onCancel={handleCancel}>
+      <Modal
+        visible={isModalVisible}
+        footer={null}
+        onOk={handleOk}
+        onCancel={handleCancel}
+        width={800}
+      >
         <Search
           placeholder="input search text"
           onSearch={onSearch}
-          style={{ width: 200 }}
+          style={{ width: 700 }}
         />
-
-        <p>Some contents...</p>
-        <p>Some contents...</p>
+        <ScallListSearch>
+          <List
+            grid={{
+              column: 1,
+            }}
+            itemLayout="horizontal"
+            dataSource={filteredData}
+            renderItem={(item) => (
+              <List.Item>
+                <Card hoverable>
+                  <ButtonDelete type="text" onClick={showModal}>
+                    Add
+                  </ButtonDelete>
+                  <div>
+                    <Row>
+                      <Col flex={1}>
+                        <Image width={100} src={item.imageUrl} />
+                      </Col>
+                      <Col flex={4}>
+                        <h1>{item.name}</h1>
+                        <div>
+                          <Row>
+                            <Col flex={2}>HP</Col>
+                            <Col flex={3}>
+                              <Progress percent={item.hp} />
+                            </Col>
+                          </Row>
+                          <Row>
+                            <Col flex={2}>STR</Col>
+                            <Col flex={3}>
+                              <Progress percent={item.strength} />
+                            </Col>
+                          </Row>
+                          <Row>
+                            <Col flex={2}>WEAK</Col>
+                            <Col flex={3}>
+                              <Progress percent={item.weakness} />
+                            </Col>
+                          </Row>
+                        </div>
+                        <div>
+                          <Rate disabled defaultValue={item.happiness} />
+                        </div>
+                      </Col>
+                    </Row>
+                  </div>
+                </Card>
+              </List.Item>
+            )}
+          />
+        </ScallListSearch>
       </Modal>
-      <FooterStyled>
+
+      <FooterStyled style={{}}>
         <Button onClick={showModal}>Primary Button</Button>
       </FooterStyled>
     </div>
   );
 };
+const CardShowItem = styled.div``;
+
+// const ModalCuttom = styled(AntModal)`
+//   width: 1000;
+//   marginbuttom: 0px;
+// `;
+
+const ButtonDelete = styled(AntButton)`
+  color: red;
+  position: absolute;
+  z-index: 1;
+  right: 0px;
+  fontfamily: Atma;
+`;
 
 const Button = styled(AntButton)`
-  border-radius: 13px;
-  background: #ec5656;
+  border-radius: 50px;
+  // background: #ec5656;
+  background: black;
   border: #ec5656;
+  color: white;
+  height: 100px;
+  width: 100px;
+`;
+const ScallListSearch = styled.div`
+  overflow: auto;
+  height: 480px;
 `;
 
 const FooterStyled = styled.div`
   background: #ec5656;
   text-align: center;
+  height: 52px;
 `;
-// const ButtonAdd = styled.button`
-//   border-radius: 13px;
-// `;
 
 export default App;
