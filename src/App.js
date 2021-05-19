@@ -138,18 +138,7 @@ const App = () => {
           dataSource={myListCard}
           renderItem={(item) => (
             <List.Item>
-              <Card
-                hoverable
-                // extra={
-                //   show ? (
-                //     <ButtonDelete type="text" onClick={showModal}>
-                //       X
-                //     </ButtonDelete>
-                //   ) : null
-                // }
-                // onMouseEnter={mouseHover}
-                // onMouseLeave={mouseHover}
-              >
+              <Card hoverable>
                 <div>
                   <ButtonCustomCard
                     type="text"
@@ -213,8 +202,8 @@ const App = () => {
         onCancel={handleCancel}
         width={800}
       >
-        <Search
-          placeholder="input search text"
+        <CustomSearchBar
+          placeholder="Find pokemon"
           onSearch={onSearch}
           style={{ width: 720 }}
         />
@@ -312,6 +301,11 @@ const TextCustomH1 = styled.h1`
 const TextCustom = styled.h2`
   font-size: 12px;
   font-family: "Atma", cursive;
+`;
+
+const CustomSearchBar = styled(Search)`
+  font-size: 12px;
+  font-family: "Atma";
 `;
 
 const TextTitle = styled.h1`
