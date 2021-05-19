@@ -14,7 +14,6 @@ import {
   Progress,
 } from "antd";
 import styled from "styled-components";
-// import { Footer } from "./component/footer";
 const { Search } = Input;
 
 const COLORS = {
@@ -31,106 +30,17 @@ const COLORS = {
   Fire: "#eb4d4b",
 };
 
-const Mycard = [
-  {
-    id: "ex8-98",
-    name: "Deoxys ex",
-    nationalPokedexNumber: 386,
-    imageUrl: "https://images.pokemontcg.io/ex8/98.png",
-    imageUrlHiRes: "https://images.pokemontcg.io/ex8/98_hires.png",
-    supertype: "Pokémon",
-    subtype: "EX",
-    ability: {
-      name: "Form Change",
-      text: "Once during your turn (before your attack), you may search your deck for another Deoxys ex and switch it with Deoxys ex. (Any cards attached to Deoxys ex, damage counters, Special Conditions, and effects on it are now on the new Pokémon.) If you do, put Deoxys ex on top of your deck. Shuffle your deck afterward. You can't use more than 1 Form Change Poké-Power each turn.",
-      type: "Poké-Power",
-    },
-    hp: "110",
-    retreatCost: ["Colorless", "Colorless"],
-    convertedRetreatCost: 2,
-    number: "98",
-    artist: "Mitsuhiro Arita",
-    rarity: "Rare Holo EX",
-    series: "EX",
-    set: "Deoxys",
-    setCode: "ex8",
-    text: [
-      "When Pokémon-ex has been Knocked Out, your opponent takes 2 Prize cards.",
-    ],
-    attacks: [
-      {
-        cost: ["Psychic", "Colorless", "Colorless"],
-        name: "Psychic Burst",
-        text: "You may discard 2 Energy attached to Deoxys ex. If you do, this attack does 50 damage plus 20 more damage for each Energy attached to the Defending Pokémon.",
-        damage: "50+",
-        convertedEnergyCost: 3,
-      },
-    ],
-    weaknesses: [
-      {
-        type: "Psychic",
-        value: "×2",
-      },
-    ],
-    type: "Psychic",
-  },
-  {
-    id: "dp6-90",
-    name: "Cubone",
-    nationalPokedexNumber: 104,
-    imageUrl: "https://images.pokemontcg.io/dp6/90.png",
-    imageUrlHiRes: "https://images.pokemontcg.io/dp6/90_hires.png",
-    supertype: "Pokémon",
-    subtype: "Basic",
-    hp: "60",
-    retreatCost: ["Colorless"],
-    convertedRetreatCost: 1,
-    number: "90",
-    artist: "Kagemaru Himeno",
-    rarity: "Common",
-    series: "Diamond & Pearl",
-    set: "Legends Awakened",
-    setCode: "dp6",
-    attacks: [
-      {
-        cost: ["Colorless"],
-        name: "Headbutt",
-        text: "",
-        damage: "10",
-        convertedEnergyCost: 1,
-      },
-      {
-        cost: ["Fighting", "Colorless"],
-        name: "Bonemerang",
-        text: "Flip 2 coins. This attack does 20 damage times the number of heads.",
-        damage: "20×",
-        convertedEnergyCost: 2,
-      },
-    ],
-    resistances: [
-      {
-        type: "Lightning",
-        value: "-20",
-      },
-    ],
-    weaknesses: [
-      {
-        type: "Water",
-        value: "+10",
-      },
-    ],
-    type: "Fighting",
-  },
-];
+const Mycart = [];
 
 const App = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [dataListCard, setDataListCard] = useState([]);
+  // const [dataListCard, setDataListCard] = useState([]);
   const [search, setSearch] = useState("");
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [show, setShow] = useState(false);
   const [dataStruc, setDataStruc] = useState([]);
+  const [myListCard, setMyListCard] = useState([]);
 
   useEffect(() => {
     setLoading(true);
@@ -138,7 +48,8 @@ const App = () => {
       .get("http://localhost:3030/api/cards")
       .then((res) => {
         console.log("Hi my", res.data.cards);
-        setDataListCard(res.data.cards);
+        // setDataListCard(res.data.cards);
+        Call(res.data.cards);
         setLoading(false);
       })
       .catch((err) => {
@@ -148,12 +59,11 @@ const App = () => {
 
   useEffect(() => {
     setFilteredData(
-      dataListCard.filter((card) =>
+      dataStruc.filter((card) =>
         card.name.toLowerCase().includes(search.toLowerCase())
       )
     );
-    Call();
-  }, [search, dataListCard]);
+  }, [search, dataStruc]);
 
   const showModal = () => {
     setIsModalVisible(true);
@@ -170,8 +80,8 @@ const App = () => {
   const onSearch = (value) => setSearch(value);
   const mouseHover = () => setShow((prev) => !prev);
 
-  const Call = () => {
-    const filterMap = dataListCard.map((item) => ({
+  const Call = (dataAll) => {
+    const filterMap = dataAll.map((item) => ({
       id: item.id,
       name: item.name,
       imageUrl: item.imageUrl,
@@ -184,19 +94,40 @@ const App = () => {
           : 0,
       weakness: item?.weaknesses?.length === 1 ? 100 : 0,
       damage: calDamage(item.attacks),
-      happiness: 5,
+      happiness: calHappiness(item?.hp, item?.attacks, item?.weaknesses),
     }));
     setDataStruc(filterMap);
     console.log("New Data", filterMap);
   };
 
+  const calHappiness = (Hp, Damage, Weakness) => {
+    const a =
+      ((Hp < 100 ? 100 : 0) / 10 +
+        calDamage(Damage) / 10 +
+        10 -
+        (Weakness?.length === 1 ? 100 : 0)) /
+      5;
+    return a;
+  };
+
   const calDamage = (item) => {
-    console.log("calDamage", item);
-    var totalDamage = 0;
+    var totalDamage = [];
     for (var i = 0; i < item?.length; i++) {
-      totalDamage = totalDamage + (item[i]?.damage).match(/(\d+)/);
+      totalDamage = totalDamage + item[i]?.damage;
     }
-    return 60;
+    const cutArray = totalDamage.length == 0 ? "0" : totalDamage;
+    const extractNumber = cutArray?.match(/\d+/)[0];
+    const sum = extractNumber <= 50 ? 50 : extractNumber <= 20 ? 20 : 0;
+    return sum;
+  };
+
+  const handleAddItem = (e) => {
+    setDataStruc(dataStruc.filter((item) => item.name !== e.name));
+    setMyListCard([...myListCard, e]);
+  };
+
+  const handleRemoveItem = (e) => {
+    setMyListCard(myListCard.filter((item) => item.name !== e.name));
   };
 
   return (
@@ -207,7 +138,7 @@ const App = () => {
             gutter: 4,
             column: 2,
           }}
-          dataSource={dataStruc}
+          dataSource={myListCard}
           renderItem={(item) => (
             <List.Item>
               <Card
@@ -223,6 +154,12 @@ const App = () => {
                 // onMouseLeave={mouseHover}
               >
                 <div>
+                  <ButtonCustomCard
+                    type="text"
+                    onClick={() => handleRemoveItem(item)}
+                  >
+                    X
+                  </ButtonCustomCard>
                   <Row>
                     <Col flex={2}>
                       <Image preview={false} width={100} src={item.imageUrl} />
@@ -231,21 +168,27 @@ const App = () => {
                       <h1>{item.name}</h1>
                       <div>
                         <Row>
-                          <Col flex={2}>HP</Col>
-                          <Col flex={3}>
-                            <Progress percent={item.hp} />
+                          <Col flex={1}>
+                            <Row>HP</Row>
+                            <Row>STR</Row>
+                            <Row>WEAK</Row>
                           </Col>
-                        </Row>
-                        <Row>
-                          <Col flex={2}>STR</Col>
-                          <Col flex={3}>
-                            <Progress percent={item.strength} />
-                          </Col>
-                        </Row>
-                        <Row>
-                          <Col flex={2}>WEAK</Col>
-                          <Col flex={3}>
-                            <Progress percent={item.weakness} />
+                          <Col flex={4}>
+                            <Row>
+                              <Progress showInfo={false} percent={item.hp} />
+                            </Row>
+                            <Row>
+                              <Progress
+                                showInfo={false}
+                                percent={item.strength}
+                              />
+                            </Row>
+                            <Row>
+                              <Progress
+                                showInfo={false}
+                                percent={item.weakness}
+                              />
+                            </Row>
                           </Col>
                         </Row>
                       </div>
@@ -282,33 +225,46 @@ const App = () => {
             renderItem={(item) => (
               <List.Item>
                 <Card hoverable>
-                  <ButtonDelete type="text" onClick={showModal}>
+                  <ButtonCustomCard
+                    type="text"
+                    onClick={() => handleAddItem(item)}
+                  >
                     Add
-                  </ButtonDelete>
+                  </ButtonCustomCard>
                   <div>
                     <Row>
                       <Col flex={1}>
-                        <Image width={100} src={item.imageUrl} />
+                        <Image
+                          preview={false}
+                          width={100}
+                          src={item.imageUrl}
+                        />
                       </Col>
                       <Col flex={4}>
                         <h1>{item.name}</h1>
                         <div>
                           <Row>
-                            <Col flex={2}>HP</Col>
-                            <Col flex={3}>
-                              <Progress percent={item.hp} />
+                            <Col flex={1}>
+                              <Row>HP</Row>
+                              <Row>STR</Row>
+                              <Row>WEAK</Row>
                             </Col>
-                          </Row>
-                          <Row>
-                            <Col flex={2}>STR</Col>
-                            <Col flex={3}>
-                              <Progress percent={item.strength} />
-                            </Col>
-                          </Row>
-                          <Row>
-                            <Col flex={2}>WEAK</Col>
-                            <Col flex={3}>
-                              <Progress percent={item.weakness} />
+                            <Col flex={4}>
+                              <Row>
+                                <Progress showInfo={false} percent={item.hp} />
+                              </Row>
+                              <Row>
+                                <Progress
+                                  showInfo={false}
+                                  percent={item.strength}
+                                />
+                              </Row>
+                              <Row>
+                                <Progress
+                                  showInfo={false}
+                                  percent={item.weakness}
+                                />
+                              </Row>
                             </Col>
                           </Row>
                         </div>
@@ -324,21 +280,14 @@ const App = () => {
           />
         </ScallListSearch>
       </Modal>
-
       <FooterStyled style={{}}>
-        <Button onClick={showModal}>Primary Button</Button>
+        <ButtonCustom onClick={() => showModal()}>Primary Button</ButtonCustom>
       </FooterStyled>
     </div>
   );
 };
-const CardShowItem = styled.div``;
 
-// const ModalCuttom = styled(AntModal)`
-//   width: 1000;
-//   marginbuttom: 0px;
-// `;
-
-const ButtonDelete = styled(AntButton)`
+const ButtonCustomCard = styled(AntButton)`
   color: red;
   position: absolute;
   z-index: 1;
@@ -346,7 +295,7 @@ const ButtonDelete = styled(AntButton)`
   fontfamily: Atma;
 `;
 
-const Button = styled(AntButton)`
+const ButtonCustom = styled(AntButton)`
   border-radius: 50px;
   // background: #ec5656;
   background: black;
