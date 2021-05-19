@@ -30,11 +30,8 @@ const COLORS = {
   Fire: "#eb4d4b",
 };
 
-const Mycart = [];
-
 const App = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
-  // const [dataListCard, setDataListCard] = useState([]);
   const [search, setSearch] = useState("");
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -47,8 +44,6 @@ const App = () => {
     axios
       .get("http://localhost:3030/api/cards")
       .then((res) => {
-        console.log("Hi my", res.data.cards);
-        // setDataListCard(res.data.cards);
         Call(res.data.cards);
         setLoading(false);
       })
@@ -128,11 +123,13 @@ const App = () => {
 
   const handleRemoveItem = (e) => {
     setMyListCard(myListCard.filter((item) => item.name !== e.name));
+    setDataStruc([...dataStruc, e]);
   };
 
   return (
     <div className="App">
-      <div style={{ height: "660px", overflow: "auto" }}>
+      <TextTitle>My Pokedex</TextTitle>
+      <div style={{ height: "550px", overflow: "auto" }}>
         <List
           grid={{
             gutter: 4,
@@ -165,13 +162,19 @@ const App = () => {
                       <Image preview={false} width={100} src={item.imageUrl} />
                     </Col>
                     <Col flex={3}>
-                      <h1>{item.name}</h1>
+                      <TextCustomH1>{item.name}</TextCustomH1>
                       <div>
                         <Row>
                           <Col flex={1}>
-                            <Row>HP</Row>
-                            <Row>STR</Row>
-                            <Row>WEAK</Row>
+                            <Row>
+                              <TextCustom>HP</TextCustom>
+                            </Row>
+                            <Row>
+                              <TextCustom>STR</TextCustom>
+                            </Row>
+                            <Row>
+                              <TextCustom>WEAK</TextCustom>
+                            </Row>
                           </Col>
                           <Col flex={4}>
                             <Row>
@@ -213,7 +216,7 @@ const App = () => {
         <Search
           placeholder="input search text"
           onSearch={onSearch}
-          style={{ width: 700 }}
+          style={{ width: 720 }}
         />
         <ScallListSearch>
           <List
@@ -241,13 +244,19 @@ const App = () => {
                         />
                       </Col>
                       <Col flex={4}>
-                        <h1>{item.name}</h1>
+                        <TextCustomH1>{item.name}</TextCustomH1>
                         <div>
                           <Row>
                             <Col flex={1}>
-                              <Row>HP</Row>
-                              <Row>STR</Row>
-                              <Row>WEAK</Row>
+                              <Row>
+                                <TextCustom>HP</TextCustom>
+                              </Row>
+                              <Row>
+                                <TextCustom>STR</TextCustom>
+                              </Row>
+                              <Row>
+                                <TextCustom>WEAK</TextCustom>
+                              </Row>
                             </Col>
                             <Col flex={4}>
                               <Row>
@@ -281,7 +290,7 @@ const App = () => {
         </ScallListSearch>
       </Modal>
       <FooterStyled style={{}}>
-        <ButtonCustom onClick={() => showModal()}>Primary Button</ButtonCustom>
+        <ButtonCustom onClick={() => showModal()}>+</ButtonCustom>
       </FooterStyled>
     </div>
   );
@@ -292,17 +301,34 @@ const ButtonCustomCard = styled(AntButton)`
   position: absolute;
   z-index: 1;
   right: 0px;
-  fontfamily: Atma;
+  font-size: 30px;
+  font-family: "Atma", cursive;
+`;
+const TextCustomH1 = styled.h1`
+  font-size: 32px;
+  font-family: "Gaegu", cursive;
+`;
+
+const TextCustom = styled.h2`
+  font-size: 12px;
+  font-family: "Atma", cursive;
+`;
+
+const TextTitle = styled.h1`
+  text-align: center;
+  font-size: 54px;
+  font-family: "Atma", cursive;
 `;
 
 const ButtonCustom = styled(AntButton)`
   border-radius: 50px;
-  // background: #ec5656;
-  background: black;
+  background: #ec5656;
   border: #ec5656;
   color: white;
-  height: 100px;
-  width: 100px;
+  height: 50px;
+  width: 50px;
+  font-size: 34px;
+  font-family: "Atma", cursive;
 `;
 const ScallListSearch = styled.div`
   overflow: auto;
@@ -312,6 +338,8 @@ const ScallListSearch = styled.div`
 const FooterStyled = styled.div`
   background: #ec5656;
   text-align: center;
+  // justifycontent: "center";
+  // justifyitems: "center";
   height: 52px;
 `;
 
