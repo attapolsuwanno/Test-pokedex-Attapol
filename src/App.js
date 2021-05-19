@@ -35,7 +35,6 @@ const App = () => {
   const [search, setSearch] = useState("");
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [show, setShow] = useState(false);
   const [dataStruc, setDataStruc] = useState([]);
   const [myListCard, setMyListCard] = useState([]);
 
@@ -44,7 +43,7 @@ const App = () => {
     axios
       .get("http://localhost:3030/api/cards")
       .then((res) => {
-        Call(res.data.cards);
+        Cal(res.data.cards);
         setLoading(false);
       })
       .catch((err) => {
@@ -73,9 +72,8 @@ const App = () => {
   };
 
   const onSearch = (value) => setSearch(value);
-  const mouseHover = () => setShow((prev) => !prev);
 
-  const Call = (dataAll) => {
+  const Cal = (dataAll) => {
     const filterMap = dataAll.map((item) => ({
       id: item.id,
       name: item.name,
@@ -92,7 +90,6 @@ const App = () => {
       happiness: calHappiness(item?.hp, item?.attacks, item?.weaknesses),
     }));
     setDataStruc(filterMap);
-    console.log("New Data", filterMap);
   };
 
   const calHappiness = (Hp, Damage, Weakness) => {
@@ -110,7 +107,7 @@ const App = () => {
     for (var i = 0; i < item?.length; i++) {
       totalDamage = totalDamage + item[i]?.damage;
     }
-    const cutArray = totalDamage.length == 0 ? "0" : totalDamage;
+    const cutArray = totalDamage.length === 0 ? "0" : totalDamage;
     const extractNumber = cutArray?.match(/\d+/)[0];
     const sum = extractNumber <= 50 ? 50 : extractNumber <= 20 ? 20 : 0;
     return sum;
@@ -129,7 +126,7 @@ const App = () => {
   return (
     <div className="App">
       <TextTitle>My Pokedex</TextTitle>
-      <div style={{ height: "550px", overflow: "auto" }}>
+      <CustomDisplay>
         <List
           grid={{
             gutter: 4,
@@ -194,7 +191,7 @@ const App = () => {
             </List.Item>
           )}
         />
-      </div>
+      </CustomDisplay>
       <Modal
         visible={isModalVisible}
         footer={null}
@@ -278,12 +275,17 @@ const App = () => {
           />
         </ScallListSearch>
       </Modal>
-      <FooterStyled style={{}}>
+      <FooterStyled>
         <ButtonCustom onClick={() => showModal()}>+</ButtonCustom>
       </FooterStyled>
     </div>
   );
 };
+
+const CustomDisplay = styled.div`
+  height: 550px;
+  overflow: auto;
+`;
 
 const ButtonCustomCard = styled(AntButton)`
   color: red;
